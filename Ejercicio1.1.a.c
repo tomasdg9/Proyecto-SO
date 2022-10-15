@@ -154,16 +154,17 @@ void reciclar_Vidrio() {
 	while(1) {
 		ITEM_BASURA item;
 
-		if (read(p2[0], &item, sizeof(item)) != -1) { // Intento reciclar del pipe de Vidrio.
+		if (read(p2[0], &item, sizeof(item)) != -1) { // Intenta reciclar del pipe de Vidrio.
 			printf("Item reciclado = %s (%d) | Proceso = %d \n", item.nombre, item.tipo, getpid());
 
-		} else { // Ayudo a los otros recicladores.
+		} else { // Ayuda a los otros recicladores o toma mate.
 			printf("El pipe de Vidrio (p2) se encuentra vacio -> ");
 			
 			if (read(p3[0], &item, sizeof(item)) != -1 || read(p4[0], &item, sizeof(item)) != -1 || read(p5[0], &item, sizeof(item)) != -1) {
 				printf("AYUDANDO | Item reciclado = %s (%d) | Proceso = %d \n", item.nombre, item.tipo, getpid());
 			} else {
 				printf("Estoy tomando mate (Los otros recicladores no requieren ayuda) | Proceso = %d \n", getpid()); 
+				sleep(3);
 			}
 		}
 		
@@ -181,16 +182,17 @@ void reciclar_Carton() {
 	while(1) {
 		ITEM_BASURA item;
 
-		if (read(p3[0], &item, sizeof(item)) != -1) { // Intento reciclar del pipe de Carton.
+		if (read(p3[0], &item, sizeof(item)) != -1) { // Intenta reciclar del pipe de Carton.
 			printf("Item reciclado = %s (%d) | Proceso = %d \n", item.nombre, item.tipo, getpid());
 
-		} else { // Ayudo a los otros recicladores.
+		} else { // Ayuda a los otros recicladores o toma mate.
 			printf("El pipe de Carton (p3) se encuentra vacio -> ");
 			
 			if (read(p2[0], &item, sizeof(item)) != -1 || read(p4[0], &item, sizeof(item)) != -1 || read(p5[0], &item, sizeof(item)) != -1) {
 				printf("AYUDANDO | Item reciclado = %s (%d) | Proceso = %d \n", item.nombre, item.tipo, getpid());
 			} else {
 				printf("Estoy tomando mate (Los otros recicladores no requieren ayuda) | Proceso = %d \n", getpid()); 
+				sleep(3);
 			}
 		
 		}
@@ -209,16 +211,17 @@ void reciclar_Plastico() {
 	while(1) {
 		ITEM_BASURA item;
 
-		if (read(p4[0], &item, sizeof(item)) != -1) { // Intento reciclar del pipe de Plastico.
+		if (read(p4[0], &item, sizeof(item)) != -1) { // Intenta reciclar del pipe de Plastico.
 			printf("Item reciclado = %s (%d) | Proceso = %d \n", item.nombre, item.tipo, getpid());
 
-		} else { // Ayudo a los otros recicladores.
+		} else { // Ayuda a los otros recicladores o toma mate.
 			printf("El pipe de Plastico (p4) se encuentra vacio -> ");
 			
 			if (read(p2[0], &item, sizeof(item)) != -1 || read(p3[0], &item, sizeof(item)) != -1 || read(p5[0], &item, sizeof(item)) != -1) {
 				printf("AYUDANDO | Item reciclado = %s (%d) | Proceso = %d \n", item.nombre, item.tipo, getpid());
 			} else {
 				printf("Estoy tomando mate (Los otros recicladores no requieren ayuda) | Proceso = %d \n", getpid()); 
+				sleep(3);
 			}
 		
 		}
@@ -237,17 +240,18 @@ void reciclar_Aluminio() {
 	while(1) {
 		ITEM_BASURA item;
 
-		if (read(p5[0], &item, sizeof(item)) != -1) { // Intento reciclar del pipe de Aluminio.
+		if (read(p5[0], &item, sizeof(item)) != -1) { // Intenta reciclar del pipe de Aluminio.
 
 			printf("Item reciclado = %s (%d) | Proceso = %d \n", item.nombre, item.tipo, getpid());
 
-		} else { // Ayudo a los otros recicladores.
+		} else { // Ayuda a los otros recicladores o toma mate.
 			printf("El pipe de Aluminio (p5) se encuentra vacio -> ");
 			
 			if (read(p2[0], &item, sizeof(item)) != -1 || read(p3[0], &item, sizeof(item)) != -1 || read(p4[0], &item, sizeof(item)) != -1) {
 				printf("AYUDANDO | Item reciclado = %s (%d) | Proceso = %d \n", item.nombre, item.tipo, getpid());
 			} else {
 				printf("Estoy tomando mate (Los otros recicladores no requieren ayuda) | Proceso = %d \n", getpid()); 
+				sleep(3);
 			}
 		
 		}
@@ -257,8 +261,10 @@ void reciclar_Aluminio() {
 }
 
 /*
- * Recicla los items del pipe correspondiente y en caso de que no hayan
- * items disponibles se ayuda a otro reciclador o se toma mate.
+ * Recicla los items de la MQ correspondiente y en caso de que no hayan items disponibles 
+ * se ayuda a otro reciclador o se toma mate.
+ * Asigna una tarea principal a cada proceso reciclador a partir de la variable k.
+ * Cierra los fd no necesarios para las tareas de reciclado.
  **/
 void reciclar(int k) {
 	close(p1[0]); close(p1[1]);

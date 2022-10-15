@@ -4,7 +4,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-int pA[2], pB[2], pC[2], pDE[2], pF[2];
+int pA1[2], pA2[2], pB[2], pC[2], pDE[2], pF[2];
 
 /*
  * Muestra la letra A de la secuencia por pantalla. 
@@ -12,14 +12,16 @@ int pA[2], pB[2], pC[2], pDE[2], pF[2];
 void * A() {
 	int signal;
 	
-	close(pA[1]);
+	close(pA1[1]);
+	close(pA2[1]);
 	close(pB[0]);
 	close(pC[0]);
 	close(pDE[0]); close(pDE[1]);
 	close(pF[0]); close(pF[1]);
 	
 	while(1) {
-		read(pA[0], &signal, sizeof(signal));
+		read(pA1[0], &signal, sizeof(signal));
+		read(pA2[0], &signal, sizeof(signal));
 		printf("A");
 		fflush(stdout);
 		write(pB[1], &signal, sizeof(signal));
@@ -34,7 +36,8 @@ void * A() {
 void * B() {
 	int signal;
 	
-	close(pA[0]);
+	close(pA1[0]);
+	close(pA2[0]); close(pA2[1]);
 	close(pB[1]);
 	close(pC[0]); close(pC[1]);
 	close(pDE[0]);
@@ -45,8 +48,8 @@ void * B() {
 		read(pB[0], &signal, sizeof(signal));
 		printf("B");
 		fflush(stdout);
+		write(pA1[1], &signal, sizeof(signal));
 		write(pDE[1], &signal, sizeof(signal));
-		write(pA[1], &signal, sizeof(signal));
 		sleep(1);
 	}
 }
@@ -57,7 +60,8 @@ void * B() {
 void * C() {
 	int signal;
 	
-	close(pA[0]); close(pA[1]);
+	close(pA1[0]); close(pA1[1]);
+	close(pA2[0]); close(pA2[1]);
 	close(pB[0]); close(pB[1]);
 	close(pC[1]);
 	close(pDE[0]);
@@ -76,10 +80,11 @@ void * C() {
 /*
  * Muestra la letra D de la secuencia por pantalla. 
  **/
-void * D() {
+void * D() {	
 	int signal;
 	
-	close(pA[0]); close(pA[1]);
+	close(pA1[0]); close(pA1[1]);
+	close(pA2[0]);
 	close(pB[0]); close(pB[1]);
 	close(pC[0]); close(pC[1]);
 	close(pDE[1]);
@@ -90,6 +95,7 @@ void * D() {
 		printf("D");
 		fflush(stdout);
 		write(pF[1], &signal, sizeof(signal));
+		write(pA2[1], &signal, sizeof(signal));
 		sleep(1);
 	}
 }
@@ -100,7 +106,8 @@ void * D() {
 void * E() {
 	int signal;
 	
-	close(pA[0]); close(pA[1]);
+	close(pA1[0]); close(pA1[1]);
+	close(pA2[0]);
 	close(pB[0]); close(pB[1]);
 	close(pC[0]); close(pC[1]);
 	close(pDE[1]);
@@ -111,6 +118,7 @@ void * E() {
 		printf("E");
 		fflush(stdout);
 		write(pF[1], &signal, sizeof(signal));
+		write(pA2[1], &signal, sizeof(signal));
 		sleep(1);
 	}
 }
@@ -121,7 +129,8 @@ void * E() {
 void * F() {
 	int signal;
 	
-	close(pA[0]);
+	close(pA1[0]);
+	close(pA2[0]); close(pA2[1]);
 	close(pB[0]); close(pB[1]);
 	close(pC[0]); close(pC[1]);
 	close(pDE[0]); close(pDE[1]);
@@ -132,7 +141,7 @@ void * F() {
 		read(pF[0], &signal, sizeof(signal));
 		printf("F");
 		fflush(stdout);
-		write(pA[1], &signal, sizeof(signal));
+		write(pA1[1], &signal, sizeof(signal));
 		sleep(1);
 	} 
 }
@@ -143,13 +152,15 @@ void * F() {
 void inicializarPipes() {
 	int signal = 1;
 	
-	pipe(pA);
+	pipe(pA1);
+	pipe(pA2);
 	pipe(pB);
 	pipe(pC);
 	pipe(pDE);
 	pipe(pF);
 	
-	write(pA[1], &signal, sizeof(signal));
+	write(pA1[1], &signal, sizeof(signal));
+	write(pA2[1], &signal, sizeof(signal));
 	write(pB[1], &signal, sizeof(signal));
 }
 

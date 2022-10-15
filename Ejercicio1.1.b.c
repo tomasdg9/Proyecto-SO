@@ -7,6 +7,7 @@
 #include <time.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
+#include <mqueue.h>
 
 #define RECOLECTORES 3
 #define CLASIFICADORES 2
@@ -15,12 +16,15 @@
 #define MIN_TIPO 1
 #define MAX_TIPO 4
 
-int mq1, mq2, mq3, mq4, mq5;
-// mq1 -> MQ utilizada por recolectores-clasificadores.
-// mq2 -> MQ utilizada por clasificadores-recicladores para items 'Vidrio'
-// mq3 -> MQ utilizada por clasificadores-recicladores para items 'Carton'
-// mq4 -> MQ utilizada por clasificadores-recicladores para items 'Plastico'
-// mq5 -> MQ utilizada por clasificadores-recicladores para items 'Aluminio'
+mqd_t mq;
+/* mq -> Message Queue utilizada para toda la planta de reciclado.
+ * -> Tipos de items
+ * Tipo 1: Items recolectados en espera de clasificacion.
+ * Tipo 2: Items clasificados del tipo Vidrio.
+ * Tipo 3: Items clasificados del tipo Carton.
+ * Tipo 4: Items clasificados del tipo Plastico.
+ * Tipo 5: Items clasificados del tipo Aluminio.
+ */
 
 /*
  * struct utilizado para la representacion de los elementos de basura.
@@ -40,7 +44,7 @@ void empaquetarPaqueteBasura(MENSAJE paquete[]) {
 	for (int i = 0; i < PAQUETE_SIZE; i ++) {
 		long random = rand() % (MAX_TIPO - MIN_TIPO + 1) + MIN_TIPO;
 		
-		paquete[i].tipo = random;
+		paquete[i].tipo = 1;
 		
 		switch(random) {
 			case 1: strcpy(paquete[i].nombre, "Vidrio"); break;
@@ -52,201 +56,207 @@ void empaquetarPaqueteBasura(MENSAJE paquete[]) {
 }
 
 /*
- * Recoleta un nuevo paquete de items y los carga en la MQ de recoleccion-clasificacion
+ * Recoleta un nuevo paquete de items y los carga en la MQ como tipo 1.
  * para que puedan ser clasificados. 
  **/
 void recolectar() {
 	while(1) {
 		MENSAJE paquete[PAQUETE_SIZE];
 		empaquetarPaqueteBasura(paquete);
+		int sizeItem = sizeof(MENSAJE) - sizeof(long);
 		
 		for (int i = 0; i < PAQUETE_SIZE; i ++) {
 			MENSAJE item = paquete[i];
-			int sizeItem = sizeof(item) - sizeof(long);
 			
-			if (msgsnd(mq1, &item, sizeItem, IPC_NOWAIT) != -1) {
+			if (msgsnd(mq, &item, sizeItem, IPC_NOWAIT) != -1) {
 				printf("Item recolectado = %s (%ld) | Proceso = %d \n", item.nombre, item.tipo, getpid());
 			} else {
-				printf("La MQ de recolectados (mq1) se encuentra llena | Proceso = %d \n", getpid());
+				printf("No es posible recolectar -> La MQ se encuentra llena | Proceso = %d \n", getpid());
 			}
 		}
 		
 		sleep(5); // Se duerme el proceso recolector actual para una mejor visualizacion.	
 	}
+	
+	mq_close(mq);
 }
 
 /*
- * Clasifica los items disponibles en la MQ de recoleccion-clasificacion
- * y los carga en las MQs de reciclado correspondientes. 
+ * Clasifica los items de tipo 1 disponibles en la MQ y los carga en la MQ nuevamente con su tipo
+ * de reciclado correspondiente. 
  **/
 void clasificar() {
 	while(1) {
-		MENSAJE item;
-		int sizeItem = sizeof(item) - sizeof(long);
-
-		if (msgrcv(mq1, &item, sizeItem, 0, IPC_NOWAIT) != -1) { // Si hay items disponibles para clasificar:
+		MENSAJE itemRCV; // Mensaje recibido de recoleccion.
+		MENSAJE itemSND; // Mensaje a enviar para reciclado.
+		int sizeItem = sizeof(MENSAJE) - sizeof(long);
+		
+		if (msgrcv(mq, &itemRCV, sizeItem, 1, IPC_NOWAIT) != -1) { // Si hay items disponibles para clasificar:
 			
-			switch(item.tipo) { // Se clasifica y distribuye en la MQ correspondiente.
-				case 1:
-					if (msgsnd(mq2, &item, sizeItem, IPC_NOWAIT) != -1) {
-						printf("Item clasificado = %s (%ld) | Proceso = %d \n", item.nombre, item.tipo, getpid());
-					} else {
-						printf("La MQ de Vidrio (mq2) se encuentra llena.");
-					}
-					break;
-				
-				case 2:
-					if (msgsnd(mq3, &item, sizeItem, IPC_NOWAIT) != -1) {
-						printf("Item clasificado = %s (%ld) | Proceso = %d \n", item.nombre, item.tipo, getpid());
-					} else {
-						printf("La MQ de Carton (mq3) se encuentra llena.");
-					}
-					break;
-				
-				case 3:
-					if (msgsnd(mq4, &item, sizeItem, IPC_NOWAIT) != -1) {
-						printf("Item clasificado = %s (%ld) | Proceso = %d \n", item.nombre, item.tipo, getpid());
-					} else {
-						printf("La MQ de Plastico (mq4) se encuentra llena.");
-					}
-					break;
-				
-				case 4:
-					if (msgsnd(mq5, &item, sizeItem, IPC_NOWAIT) != -1) {
-						printf("Item clasificado = %s (%ld) | Proceso = %d \n", item.nombre, item.tipo, getpid());
-					} else {
-						printf("La MQ de vidrio (mq5) se encuentra llena.");
-					}
-					break;
+			if (strcmp(itemRCV.nombre, "Vidrio") == 0) {
+				itemSND.tipo = 2;
+				strcpy(itemSND.nombre, "Vidrio");
+			} else if (strcmp(itemRCV.nombre, "Carton") == 0) {
+				itemSND.tipo = 3;
+				strcpy(itemSND.nombre, "Carton");
+			} else if (strcmp(itemRCV.nombre, "Plastico") == 0) {
+				itemSND.tipo = 4;
+				strcpy(itemSND.nombre, "Plastico");
+			} else if (strcmp(itemRCV.nombre, "Aluminio") == 0) {
+				itemSND.tipo = 5;
+				strcpy(itemSND.nombre, "Aluminio");
+			} 
+			
+			if (msgsnd(mq, &itemSND, sizeItem, IPC_NOWAIT) != -1) {
+				printf("Item clasificado = %s (%ld) | Proceso = %d \n", itemSND.nombre, itemSND.tipo, getpid());
+			} else {
+				printf("No es posible clasificar -> La MQ se encuentra llena | Proceso = %d \n", getpid());
 			}
 			
 		} else { // No hay items recolectados disponibles para clasificar.
-			printf("No hay elementos para clasificar | Proceso = %d \n", getpid());
+			printf("No hay elementos disponibles para clasificar | Proceso = %d \n", getpid());
 		}
 		
 		sleep(1); // Se duerme el proceso clasificador actual para una mejor visualizacion.
 	}
+	
+	mq_close(mq);
 }
 
+
 /*
- * Recicla los items de la MQ de Vidrio y en caso de estar vacio, 
+ * Recicla los items de Vidrio de la MQ (tipo 2) y en caso de no disponer Vidrio, 
  * colabora con los recicladores de Carton, Plastico y Aluminio.
- * Si los otros recicladores no disponen de items en sus respectivas
- * MQs, se toma mate.
+ * Finalmente, si los otros recicladores no disponen de items de sus respectivos tipos
+ * para reciclar, se toma mate.
  **/
 void reciclar_Vidrio() {
 	while(1) {
 		MENSAJE item;
-		int sizeItem = sizeof(item) - sizeof(long);
-
-		if (msgrcv(mq2, &item, sizeItem, 0, IPC_NOWAIT) != -1) { // Intento reciclar del pipe de Vidrio.
+		int sizeItem = sizeof(MENSAJE) - sizeof(long);	
+		
+		if (msgrcv(mq, &item, sizeItem, 2, IPC_NOWAIT) != -1) { // Intenta reciclar del tipo Vidrio.
 			printf("Item reciclado = %s (%ld) | Proceso = %d \n", item.nombre, item.tipo, getpid());
 
-		} else { // Ayudo a los otros recicladores.
-			printf("La MQ de Vidrio (mq2) se encuentra vacia -> ");
+		} else { // Ayuda a los otros recicladores o toma mate.
+			printf("No hay items de Vidrio disponibles para reciclar -> ");
 			
-			if (msgrcv(mq3, &item, sizeItem, 0, IPC_NOWAIT) != -1 || msgrcv(mq4, &item, sizeItem, 0, IPC_NOWAIT) != -1 || msgrcv(mq5, &item, sizeItem, 0, IPC_NOWAIT) != -1) {
+			if (msgrcv(mq, &item, sizeItem, 3, IPC_NOWAIT) != -1 || msgrcv(mq, &item, sizeItem, 4, IPC_NOWAIT) != -1 || msgrcv(mq, &item, sizeItem, 5, IPC_NOWAIT) != -1) {
 				printf("AYUDANDO | Item reciclado = %s (%ld) | Proceso = %d \n", item.nombre, item.tipo, getpid());
 			} else {
 				printf("Estoy tomando mate (Los otros recicladores no requieren ayuda) | Proceso = %d \n", getpid()); 
+				sleep(3);
 			}
 		
 		}
 		
 		sleep(1); // Se duerme el proceso reciclador actual para una mejor visualizacion.
 	}
+	
+	mq_close(mq);
 }
 
+
 /*
- * Recicla los items de la MQ de Carton y en caso de estar vacio, 
+ * Recicla los items de Carton de la MQ (tipo 3) y en caso de no disponer Carton, 
  * colabora con los recicladores de Vidrio, Plastico y Aluminio.
- * Si los otros recicladores no disponen de items en sus respectivas
- * MQs, se toma mate.
+ * Finalmente, si los otros recicladores no disponen de items de sus respectivos tipos
+ * para reciclar, se toma mate.
  **/
 void reciclar_Carton() {
 	while(1) {
 		MENSAJE item;
-		int sizeItem = sizeof(item) - sizeof(long);
+		int sizeItem = sizeof(MENSAJE) - sizeof(long);
 
-		if (msgrcv(mq3, &item, sizeItem, 0, IPC_NOWAIT) != -1) { // Intento reciclar del pipe de Vidrio.
+		if (msgrcv(mq, &item, sizeItem, 3, IPC_NOWAIT) != -1) { // Intento reciclar del tipo Carton
 			printf("Item reciclado = %s (%ld) | Proceso = %d \n", item.nombre, item.tipo, getpid());
 
-		} else { // Ayudo a los otros recicladores.
-			printf("La MQ de Carton (mq3) se encuentra vacia -> ");
+		} else { // Ayuda a los otros recicladores o toma mate.		
+			printf("No hay items de Cartom disponibles para reciclar -> ");
 			
-			if (msgrcv(mq2, &item, sizeItem, 0, IPC_NOWAIT) != -1 || msgrcv(mq4, &item, sizeItem, 0, IPC_NOWAIT) != -1 || msgrcv(mq5, &item, sizeItem, 0, IPC_NOWAIT)) {
+			if (msgrcv(mq, &item, sizeItem, 2, IPC_NOWAIT) != -1 || msgrcv(mq, &item, sizeItem, 4, IPC_NOWAIT) != -1 || msgrcv(mq, &item, sizeItem, 5, IPC_NOWAIT) != -1) {
 				printf("AYUDANDO | Item reciclado = %s (%ld) | Proceso = %d \n", item.nombre, item.tipo, getpid());
 			} else {
 				printf("Estoy tomando mate (Los otros recicladores no requieren ayuda) | Proceso = %d \n", getpid()); 
+				sleep(3);
 			}
 		
 		}
 		
 		sleep(1); // Se duerme el proceso reciclador actual para una mejor visualizacion.
 	}
+	
+	mq_close(mq);
 }
 
 /*
- * Recicla los items de la MQ de Plastico y en caso de estar vacio, 
+ * Recicla los items de Plastico de la MQ (tipo 3) y en caso de no disponer Plastico, 
  * colabora con los recicladores de Vidrio, Carton y Aluminio.
- * Si los otros recicladores no disponen de items en sus respectivas
- * MQs, se toma mate.
+ * Finalmente, si los otros recicladores no disponen de items de sus respectivos tipos
+ * para reciclar, se toma mate.
  **/
 void reciclar_Plastico() {
 	while(1) {
 		MENSAJE item;
-		int sizeItem = sizeof(item) - sizeof(long);
+		int sizeItem = sizeof(MENSAJE) - sizeof(long);
 
-		if (msgrcv(mq4, &item, sizeItem, 0, IPC_NOWAIT) != -1) { // Intento reciclar del pipe de Vidrio.
+		if (msgrcv(mq, &item, sizeItem, 4, IPC_NOWAIT) != -1) { // Intento reciclar del tipo Plastico.
 			printf("Item reciclado = %s (%ld) | Proceso = %d \n", item.nombre, item.tipo, getpid());
 
-		} else { // Ayudo a los otros recicladores.
-			printf("La MQ de Plastico (mq4) se encuentra vacia -> ");
+		} else { // Ayuda a los otros recicladores o toma mate.
+			printf("No hay items de Plastico disponibles para reciclar -> ");
 			
-			if (msgrcv(mq2, &item, sizeItem, 0, IPC_NOWAIT) != -1 || msgrcv(mq3, &item, sizeItem, 0, IPC_NOWAIT) != -1 || msgrcv(mq4, &item, sizeItem, 0, IPC_NOWAIT) != -1) {
+			if (msgrcv(mq, &item, sizeItem, 2, IPC_NOWAIT) != -1 || msgrcv(mq, &item, sizeItem, 3, IPC_NOWAIT) != -1 || msgrcv(mq, &item, sizeItem, 5, IPC_NOWAIT) != -1) {
 				printf("AYUDANDO | Item reciclado = %s (%ld) | Proceso = %d \n", item.nombre, item.tipo, getpid());
 			} else {
 				printf("Estoy tomando mate (Los otros recicladores no requieren ayuda) | Proceso = %d \n", getpid()); 
+				sleep(3);
 			}
 		
 		}
 		
 		sleep(1); // Se duerme el proceso reciclador actual para una mejor visualizacion.
 	}
+	
+	mq_close(mq);
 }
 
 /*
- * Recicla los items de la MQ de Aluminio y en caso de estar vacio, 
+ * Recicla los items de Aluminio de la MQ (tipo 3) y en caso de no disponer Aluminio, 
  * colabora con los recicladores de Vidrio, Carton y Plastico.
- * Si los otros recicladores no disponen de items en sus respectivas
- * MQs, se toma mate.
+ * Finalmente, si los otros recicladores no disponen de items de sus respectivos tipos
+ * para reciclar, se toma mate.
  **/
 void reciclar_Aluminio() {
 	while(1) {
 		MENSAJE item;
-		int sizeItem = sizeof(item) - sizeof(long);
-
-		if (msgrcv(mq2, &item, sizeItem, 0, IPC_NOWAIT) != -1) { // Intento reciclar del pipe de Vidrio.
+		int sizeItem = sizeof(MENSAJE) - sizeof(long);
+		
+		if (msgrcv(mq, &item, sizeItem, 5, IPC_NOWAIT) != -1) { // Intento reciclar del tipo Aluminio.
 			printf("Item reciclado = %s (%ld) | Proceso = %d \n", item.nombre, item.tipo, getpid());
 
-		} else { // Ayudo a los otros recicladores.
-			printf("La MQ de Aluminio (mq5) se encuentra vacia -> ");
-		
-			if (msgrcv(mq3, &item, sizeItem, 0, IPC_NOWAIT) != -1 || msgrcv(mq4, &item, sizeItem, 0, IPC_NOWAIT) != -1 || msgrcv(mq5, &item, sizeItem, 0, IPC_NOWAIT) != -1) {
+		} else { // Ayuda a los otros recicladores o toma mate.
+			printf("No hay items de Aluminio disponibles para reciclar -> ");
+			
+			if (msgrcv(mq, &item, sizeItem, 2, IPC_NOWAIT) != -1 || msgrcv(mq, &item, sizeItem, 3, IPC_NOWAIT) != -1 || msgrcv(mq, &item, sizeItem, 4, IPC_NOWAIT) != -1) {
 				printf("AYUDANDO | Item reciclado = %s (%ld) | Proceso = %d \n", item.nombre, item.tipo, getpid());
 			} else {
 				printf("Estoy tomando mate (Los otros recicladores no requieren ayuda) | Proceso = %d \n", getpid()); 
+				sleep(3);
 			}
 		
 		}
 		
 		sleep(1); // Se duerme el proceso reciclador actual para una mejor visualizacion.
 	}
+	
+	mq_close(mq);
 }
 
 /*
- * Recicla los items de la MQ correspondiente y en caso de que no hayan
- * items disponibles se ayuda a otro reciclador o se toma mate.
+ * Recicla los items de la MQ correspondiente y en caso de que no hayan items disponibles 
+ * se ayuda a otro reciclador o se toma mate.
+ * Asigna una tarea principal a cada proceso reciclador a partir de la variable k.
  **/
 void reciclar(int k) {
 	switch(k) {
@@ -263,22 +273,14 @@ void reciclar(int k) {
  * los procesos al intentar enviar un mensaje en una MQ llena o intentar leer de una MQ
  * vacia y poder asi trazar mejor el programa.
  **/
-void inicializarColasMensajes() {
-	key_t k1 = ftok("mq1", 65);
-	key_t k2 = ftok("mq2", 65);
-	key_t k3 = ftok("mq3", 65);
-	key_t k4 = ftok("mq4", 65);
-	key_t k5 = ftok("mq5", 65);
-	
-	mq1 = msgget (k1, 0666 | IPC_CREAT);
-	mq2 = msgget (k2, 0666 | IPC_CREAT);
-	mq3 = msgget (k3, 0666 | IPC_CREAT);
-	mq4 = msgget (k4, 0666 | IPC_CREAT);
-	mq5 = msgget (k5, 0666 | IPC_CREAT);
+void inicializarColaMensajes() {
+	// key -> Se puede generar con ftok, pero no es necesario.
+	// key_t k = ftok("path", 65);
+	mq = msgget (1234, IPC_CREAT | 0666);
 }
 
 int main() {
-	inicializarColasMensajes();
+	inicializarColaMensajes();
 	
 	srand(time(NULL)); // Se utiliza para la generacion de numeros aleatorios.
 
@@ -302,6 +304,7 @@ int main() {
 		}
 	}
 	
+	
 	sleep(1); // Se duerme el proceso padre para que los clasificadores comiencen a producir antes de que los recicladores consuman.
 	
 	for (int k = 0; k < RECICLADORES; k ++) { // Se crean los recicladores.
@@ -312,8 +315,10 @@ int main() {
 			exit(0);
 		}
 	}
-
+	
 	while(wait(NULL) > 0); // El proceso padre espera a que todos los hijos terminen.
+	
+	msgctl(mq, IPC_RMID, NULL);
 
 	return 0;
 }

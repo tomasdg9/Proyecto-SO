@@ -5,14 +5,15 @@
 #include <pthread.h>
 #include <sys/types.h>
 
-sem_t semA, semB, semC, semDE, semF;
+sem_t semA1, semA2, semB, semC, semDE, semF;
 
 /*
  * Muestra la letra A de la secuencia por pantalla. 
  **/
 void * A() {
 	while(1) {
-		sem_wait(&semA);
+		sem_wait(&semA1);
+		sem_wait(&semA2);
 		printf("A");
 		fflush(stdout);
 		sem_post(&semB);
@@ -30,8 +31,8 @@ void * B() {
 		sem_wait(&semB);
 		printf("B");
 		fflush(stdout);
+		sem_post(&semA1);
 		sem_post(&semDE);
-		sem_post(&semA);
 		sleep(1);
 	}
 }
@@ -59,6 +60,7 @@ void * D() {
 		printf("D");
 		fflush(stdout);
 		sem_post(&semF);
+		sem_post(&semA2);
 		sleep(1);
 	}
 }
@@ -72,6 +74,7 @@ void * E() {
 		printf("E");
 		fflush(stdout);
 		sem_post(&semF);
+		sem_post(&semA2);
 		sleep(1);
 	}
 }
@@ -85,7 +88,7 @@ void * F() {
 		sem_wait(&semF);
 		printf("F");
 		fflush(stdout);
-		sem_post(&semA);
+		sem_post(&semA1);
 		sleep(1);
 	} 
 }
@@ -94,7 +97,8 @@ void * F() {
  * Inicializa los semaforos con los valores adecuados para la sincronizacion.
  **/
 void inicializarSemaforos() {
-	sem_init(&semA, 1, 1);
+	sem_init(&semA1, 1, 1);
+	sem_init(&semA2, 1, 1);
 	sem_init(&semB, 1, 1);
 	sem_init(&semC, 1, 0);
 	sem_init(&semDE, 1, 0);
