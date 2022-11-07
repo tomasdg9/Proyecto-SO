@@ -1,7 +1,9 @@
 # makefile para compilar la minishell
 
+COMANDOS = mkdir rmdir mkfile ls swfile man chmod
+
 # Si se ejecuta solo 'make' 'se ejecuta el objetivo all, que incluye todo.
-all: minishell mkdir rmdir mkfile ls swfile man chmod
+all: minishell $(COMANDOS)
 
 # Compilacion del archivo principal.
 minishell:
@@ -37,4 +39,4 @@ chmod:
 	
 # Regla phony para la eliminacion de archivos .o. (Limpieza post-ejecucion)
 clean:
-	rm -f minishell mkdir rmdir mkfile ls swfile man chmod *.o
+	rm -f minishell $(COMANDOS) *.o
