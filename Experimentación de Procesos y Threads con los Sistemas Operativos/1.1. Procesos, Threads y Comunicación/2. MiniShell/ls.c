@@ -9,7 +9,7 @@
  * Comando ls(): Listar el contenido de un directorio. 
  */
 int main(int argc, char ** argv){
-    char * path = malloc(sizeof(char) * PATH_MAX); 
+    char * path;
     DIR * mydir;
     struct dirent * myfile;
         
@@ -37,8 +37,6 @@ int main(int argc, char ** argv){
         printf("%s>> ls(): Error al listar el contenido del directorio %s. %s\n", red(), path, reset());
         return -1;
     }
-    
-    free(path);
     
     return 0;
 }

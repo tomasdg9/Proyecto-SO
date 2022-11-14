@@ -7,6 +7,7 @@
 #include "colores.h"
 
 #define mq_key 1234
+#define EMPAQUETADO 1
 #define MIN_TIPO 1
 #define MAX_TIPO 4
 #define SIZE_MENSAJE sizeof(MENSAJE) - sizeof(long)
@@ -40,7 +41,7 @@ MENSAJE empaquetarItem() {
 	long random;
 	
 	random = rand() % (MAX_TIPO - MIN_TIPO + 1) + MIN_TIPO;
-	item.tipo = 1;
+	item.tipo = EMPAQUETADO;
 	
 	switch(random) {	
 		case 1: strcpy(item.nombre, "Vidrio"); break;			
@@ -72,7 +73,7 @@ void recolectar() {
 }
 
 void inicializarColaMensajes() {
-	mq = msgget (mq_key, 0666);
+	mq = msgget(mq_key, 0666);
 	
 	if (mq == -1) {
 		printf("%sOcurrio un error al crear la cola de mensajes. %s\n", red(), reset());

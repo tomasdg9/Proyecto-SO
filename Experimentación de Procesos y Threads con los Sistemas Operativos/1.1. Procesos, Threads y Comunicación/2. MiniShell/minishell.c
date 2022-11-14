@@ -30,14 +30,28 @@ void leerEntrada(char * instruccion, char ** argumentos) {
 }
 
 /*
+ * Chequea si el comando ingresado es un comando valido dentro de la Mini Shell. 
+ **/
+int checkComando(char * comando) {
+	int check = ((strcmp(comando, "mkdir") == 0) || (strcmp(comando, "rmdir") == 0) || (strcmp(comando, "mkfile") == 0) || (strcmp(comando, "ls") == 0) ||
+				(strcmp(comando, "swfile") == 0) || (strcmp(comando, "man") == 0) || (strcmp(comando, "chmod") == 0)) ? 0 : -1;
+		
+	return check;
+}
+
+/*
  * Crea un proceso hijo que ejecuta la instruccion parseada previamente.
  */ 
 int ejecutarComando(char ** argumentos) {
 	char * path;
 	pid_t child_pid;
 		
-	if(strcmp(argumentos[0], "exit") == 0) {
+	if (argumentos[0] == NULL) return 0;
+	else if(strcmp(argumentos[0], "exit") == 0) {
 		return 1;
+	} else if(checkComando(argumentos[0]) == -1) {
+		printf("%s>> minishell(): El comando %s no es valido. %s\n", red(), argumentos[0], reset());
+		return 0;
 	}
 	
 	path = (char *) malloc (sizeof(char) * PATH_MAX);
@@ -49,10 +63,10 @@ int ejecutarComando(char ** argumentos) {
 	child_pid = fork(); // Se crea el proceso hijo.
 		
 	if (child_pid == -1) {
-		printf("%sfork(): Error al crear el proceso hijo. %s\n", red(), reset());
+		printf("%s>>fork(): Error al crear el proceso hijo. %s\n", red(), reset());
 	} else if (child_pid == 0) {
 		if(execvp(argumentos[0], argumentos) == -1){ // El proceso hijo ejecuta el comando ingresado.
-			printf("%sexecvp(): Error al ejecutar el comando %s en el proceso %i. %s\n", red(), argumentos[0], getpid(), reset());
+			printf("%s>>execvp(): Error al ejecutar el comando %s en el proceso %i. %s\n", red(), argumentos[0], getpid(), reset());
 			fflush(NULL);
 		}
 		exit(0);	

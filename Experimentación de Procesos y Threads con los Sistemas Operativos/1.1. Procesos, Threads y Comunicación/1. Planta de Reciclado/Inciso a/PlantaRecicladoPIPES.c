@@ -10,6 +10,10 @@
 #define RECOLECTORES 3
 #define CLASIFICADORES 2
 #define RECICLADORES 4
+#define VIDRIO 1
+#define CARTON 2
+#define PLASTICO 3
+#define ALUMINIO 4
 #define MIN_TIPO 1
 #define MAX_TIPO 4
 
@@ -40,10 +44,10 @@ ITEM_BASURA empaquetarItem() {
 	item.tipo = random;
 	
 	switch(random) {	
-		case 1: strcpy(item.nombre, "Vidrio"); break;			
-		case 2: strcpy(item.nombre, "Carton"); break;
-		case 3: strcpy(item.nombre, "Plastico"); break;
-		case 4: strcpy(item.nombre, "Aluminio"); break;
+		case VIDRIO: strcpy(item.nombre, "Vidrio"); break;			
+		case CARTON: strcpy(item.nombre, "Carton"); break;
+		case PLASTICO: strcpy(item.nombre, "Plastico"); break;
+		case ALUMINIO: strcpy(item.nombre, "Aluminio"); break;
 	}
 	
 	return item;
@@ -94,7 +98,7 @@ void clasificar() {
 		if (read(p1[0], &item, sizeof(item)) != -1) { // Si hay items disponibles para clasificar:
 			
 			switch(item.tipo) { // Se clasifica y distribuye en el Pipe correspondiente
-				case 1:
+				case VIDRIO:
 					if (write(p2[1], &item, sizeof(item)) != -1) {
 						printf("%sCLASIFICADOR | Item clasificado = %s (%d) | Proceso = %d %s \n", yellow(), item.nombre, item.tipo, getpid(), reset());
 					} else {
@@ -102,7 +106,7 @@ void clasificar() {
 					}	
 					break;
 					
-				case 2:
+				case CARTON:
 					if (write(p3[1], &item, sizeof(item))) {
 						printf("%sCLASIFICADOR | Item clasificado = %s (%d) | Proceso = %d %s \n", yellow(), item.nombre, item.tipo, getpid(), reset());
 					} else {
@@ -110,7 +114,7 @@ void clasificar() {
 					}
 					break;
 					
-				case 3:
+				case PLASTICO:
 					if (write(p4[1], &item, sizeof(item)) != -1) {
 						printf("%sCLASIFICADOR | Item clasificado = %s (%d) | Proceso = %d %s \n", yellow(), item.nombre, item.tipo, getpid(), reset());
 					} else {
@@ -118,7 +122,7 @@ void clasificar() {
 					}
 					break;
 					
-				case 4:
+				case ALUMINIO:
 					if (write(p5[1], &item, sizeof(item)) != -1) {
 						printf("%sCLASIFICADOR | Item clasificado = %s (%d) | Proceso = %d %s \n", yellow(), item.nombre, item.tipo, getpid(), reset());
 					} else {

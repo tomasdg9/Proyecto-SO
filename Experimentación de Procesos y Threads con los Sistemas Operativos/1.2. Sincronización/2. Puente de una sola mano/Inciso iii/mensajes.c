@@ -25,8 +25,8 @@ MENSAJE crearMensaje(long tipo) {
     
 	switch(tipo) {
 		case Puente: strcpy(m.msg, "Puente"); break;
-		case PasandoN: strcpy(m.msg, "PasandoN"); break;
-		case PasandoS: strcpy(m.msg, "PasandoS"); break;
+		case PasandoN: strcpy(m.msg, "NortePuente"); break;
+		case PasandoS: strcpy(m.msg, "SurPuente"); break;
 		case MutexN: strcpy(m.msg, "MutexN"); break;
 		case MutexS: strcpy(m.msg, "MutexS"); break;
 		case CoordinadorN: strcpy(m.msg, "CoordinadorN"); break; 

@@ -98,12 +98,12 @@ void * F() {
  * Inicializa los semaforos con los valores adecuados para la sincronizacion.
  **/
 void inicializarSemaforos() {
-	sem_init(&semA1, 1, 1);
-	sem_init(&semA2, 1, 1);
-	sem_init(&semB, 1, 1);
-	sem_init(&semC, 1, 0);
-	sem_init(&semDE, 1, 0);
-	sem_init(&semF, 1, 0);
+	sem_init(&semA1, 0, 1);
+	sem_init(&semA2, 0, 1);
+	sem_init(&semB, 0, 1);
+	sem_init(&semC, 0, 0);
+	sem_init(&semDE, 0, 0);
+	sem_init(&semF, 0, 0);
 }
 
 void destruirSemaforos() {

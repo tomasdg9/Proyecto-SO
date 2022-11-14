@@ -7,6 +7,10 @@
 
 #define mq_key 1234
 #define SIZE_MENSAJE sizeof(MENSAJE) - sizeof(long)
+#define VIDRIO 2
+#define CARTON 3
+#define PLASTICO 4
+#define ALUMINIO 5
 
 int mq;
 
@@ -39,16 +43,16 @@ void clasificar() {
 		if (msgrcv(mq, &item, SIZE_MENSAJE, 1, IPC_NOWAIT) != -1) { // Si hay items disponibles para clasificar:
 			
 			if (strcmp(item.nombre, "Vidrio") == 0) {
-				item.tipo = 2;
+				item.tipo = VIDRIO;
 				strcpy(item.nombre, "Vidrio");
 			} else if (strcmp(item.nombre, "Carton") == 0) {
-				item.tipo = 3;
+				item.tipo = CARTON;
 				strcpy(item.nombre, "Carton");
 			} else if (strcmp(item.nombre, "Plastico") == 0) {
-				item.tipo = 4;
+				item.tipo = PLASTICO;
 				strcpy(item.nombre, "Plastico");
 			} else if (strcmp(item.nombre, "Aluminio") == 0) {
-				item.tipo = 5;
+				item.tipo = ALUMINIO;
 				strcpy(item.nombre, "Aluminio");
 			} 
 			
@@ -67,7 +71,7 @@ void clasificar() {
 }
 
 void inicializarColaMensajes() {
-	mq = msgget (mq_key, 0666);
+	mq = msgget(mq_key, 0666);
 	
 	if (mq == -1) {
 		printf("%sOcurrio un error al obtener la cola de mensajes. %s\n", red(), reset());

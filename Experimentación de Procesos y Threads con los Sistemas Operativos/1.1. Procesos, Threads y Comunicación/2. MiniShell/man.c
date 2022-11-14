@@ -63,7 +63,7 @@ void man_chmod() {
 	printf("%s", cyan());
 	printf("chmod(): Cambia los permisos del archivo ingresado. \n");
 	printf("Formato del comando: chmod [path_archivo][permisos] \n");
-	printf("[path_archivo] es el path del archivo. \n");
+	printf("[path_archivo] es el path del archivo. (También es posible utilizar el nombre de un archivo del directorio actual de compilación) \n");
 	printf("[permisos] es un numero de 3 digitos referenciado a los permisos <Owner><Group><Others>. \n");
 	printf("\t 0: Sin permisos. \n");
 	printf("\t 1: Permiso de ejecución. \n");

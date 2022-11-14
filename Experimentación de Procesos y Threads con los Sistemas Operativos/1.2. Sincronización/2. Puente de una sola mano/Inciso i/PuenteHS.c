@@ -23,7 +23,7 @@ pid_t gettid(void);
  **/
 void vehiculoNorte(){
     while(1) {
-        //SECCION ENTRADA
+        // PROTOCOLO DE ENTRADA
         pthread_mutex_lock(&mutexN); // Si llegan dos autos del NORTE, solo el primero obtiene el mutex.
         if(sem_trywait(&pasandoN) == 0){ // Si hay autos del NORTE pasanado actualmente.
             sem_post(&pasandoN);
@@ -33,11 +33,11 @@ void vehiculoNorte(){
         sem_post(&pasandoN);
         pthread_mutex_unlock(&mutexN);
                 
-        //SECCION CRITICA
-        printf("%sNORTE: Auto del norte pasando el puente. PATENTE: %i\n %s", blue(), gettid(), reset());
+        // SECCION CRITICA
+        printf("%sNORTE: Auto del norte pasando el puente. PATENTE: %d %s \n", blue(), gettid(), reset());
         sleep(1);
         
-        //SECCION SALIDA
+        // PROTOCOLO DE SALIDA
         pthread_mutex_lock(&mutexN);
         sem_wait(&pasandoN);
         if(sem_trywait(&pasandoN) == 0){ // Si quedan autos del NORTE pasando todavía.
@@ -46,6 +46,8 @@ void vehiculoNorte(){
             sem_post(&puente);
         }
         pthread_mutex_unlock(&mutexN);
+  
+        // SECCION RESTO
     }
     
     pthread_exit(EXIT_SUCCESS);
@@ -56,7 +58,7 @@ void vehiculoNorte(){
  **/
 void vehiculoSur(){
     while(1) {
-        //SECCION ENTRADA
+        // PROTOCOLO DE ENTRADA
         pthread_mutex_lock(&mutexS); // Si llegan dos autos del SUR, solo el primero obtiene el mutex.
         if(sem_trywait(&pasandoS) == 0){ // Si hay autos del SUR pasando actualmente.
             sem_post(&pasandoS);
@@ -66,11 +68,11 @@ void vehiculoSur(){
         sem_post(&pasandoS);
         pthread_mutex_unlock(&mutexS);
                 
-        //SECCION CRITICA
-        printf("%sSUR: Auto del sur pasando el puente. PATENTE: %i\n %s", red(), gettid(), reset());
+        // SECCION CRITICA
+        printf("%sSUR: Auto del sur pasando el puente. PATENTE: %d %s \n", red(), gettid(), reset());
         sleep(1);
         
-        //SECCION SALIDA
+        // PROTOCOLO DE SALIDA
         pthread_mutex_lock(&mutexS);
         sem_wait(&pasandoS);
         if(sem_trywait(&pasandoS) == 0){ // Si quedan autos del SUR pasando todavía.
@@ -79,6 +81,8 @@ void vehiculoSur(){
             sem_post(&puente);
         }
         pthread_mutex_unlock(&mutexS);
+    
+        // SECCION RESTO
     }
     
     pthread_exit(EXIT_SUCCESS);

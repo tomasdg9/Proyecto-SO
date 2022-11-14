@@ -40,7 +40,7 @@ void vehiculoSur(){
 	while(1) {
 		MENSAJE S1, S2, S3, S4, S5, S6, S7;
 		
-		//SECCION ENTRADA
+		// PROTOCOLO DE ENTRADA
 		coordinarSur();
 		msgrcv(mq, &S1, SIZE_MENSAJE, MutexS, 0);   
 		if (msgrcv(mq, &S2, SIZE_MENSAJE, PasandoS, IPC_NOWAIT) != -1) {
@@ -54,11 +54,11 @@ void vehiculoSur(){
 		S1 = crearMensaje(MutexS);
 		msgsnd(mq, &S1, SIZE_MENSAJE, 0);
 			
-		//SECCION CRITICA
+		// SECCION CRITICA
 		printf("%sSUR: Auto del sur pasando el puente. PATENTE: %d %s\n", red(), getpid(), reset());
 		sleep(1);
 			
-		//SECCION SALIDA
+		// PROTOCOLO DE SALIDA
 		msgrcv(mq, &S5, SIZE_MENSAJE, MutexS, 0);
 		msgrcv(mq, &S6, SIZE_MENSAJE, PasandoS, 0);
 		if (msgrcv(mq, &S7, SIZE_MENSAJE, PasandoS, IPC_NOWAIT) != -1) {
@@ -71,6 +71,8 @@ void vehiculoSur(){
 		}
 		S5 = crearMensaje(MutexS);
 		msgsnd(mq, &S5, SIZE_MENSAJE, 0);
+	
+		// SECCION RESTO
 	}
 }
 

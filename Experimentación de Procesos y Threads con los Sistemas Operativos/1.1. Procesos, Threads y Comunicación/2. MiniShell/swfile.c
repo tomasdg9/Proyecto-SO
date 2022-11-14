@@ -6,7 +6,8 @@
  * Comando swfile(): Mostrar el contenido de un archivo.
  */ 
 int main(int argc, char ** argv){
-	FILE * file;
+	FILE * myfile;
+	char cfile;
 		
 	if (argv[1] == NULL) {
 		printf("%s>> swfile(): Debe ingresar el path del archivo que desea mostrar. %s\n", white(), reset());
@@ -15,14 +16,16 @@ int main(int argc, char ** argv){
 		printf("%s>> swfile(): La cantidad de argumentos ingresados es incorrecta. %s\n", red(), reset());
 		return -1;
 	} else {
-		file = fopen(argv[1], "r");
+		myfile = fopen(argv[1], "r");
 		
-		if (file != NULL){
+		if (myfile != NULL){
 			printf("%s", white());
-			while(!feof(file)) {
-				printf("%c", fgetc(file));
+			while(1) {
+				cfile = fgetc(myfile);
+				if (feof(myfile)) break;
+				printf("%c", cfile);
 			}
-			fclose(file);	
+			fclose(myfile);	
 			printf("%s\n", reset());
 			printf("%s>> swfile(): Se mostro el archivo %s exitosamente. %s\n", green(), argv[1], reset());
 		} else {

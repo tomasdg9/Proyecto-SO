@@ -7,6 +7,10 @@
 
 #define mq_key 1234
 #define SIZE_MENSAJE sizeof(MENSAJE) - sizeof(long)
+#define VIDRIO 2
+#define CARTON 3
+#define PLASTICO 4
+#define ALUMINIO 5
 
 int mq;
 
@@ -45,10 +49,10 @@ void reciclar_Vidrio() {
 	while(1) {
 		MENSAJE item;
 		
-		if (msgrcv(mq, &item, SIZE_MENSAJE, 2, IPC_NOWAIT) != -1) { // Intenta reciclar del tipo Vidrio.
+		if (msgrcv(mq, &item, SIZE_MENSAJE, VIDRIO, IPC_NOWAIT) != -1) { // Intenta reciclar del tipo Vidrio.
 			printf("%sRECICLADOR VIDRIO | Item reciclado = %s (%ld) | Proceso = %d %s\n", green(), item.nombre, item.tipo, getpid(), reset());
 		} else { // Ayuda a los otros recicladores o toma mate.
-			if (msgrcv(mq, &item, SIZE_MENSAJE, 3, IPC_NOWAIT) != -1 || msgrcv(mq, &item, SIZE_MENSAJE, 4, IPC_NOWAIT) != -1 || msgrcv(mq, &item, SIZE_MENSAJE, 5, IPC_NOWAIT) != -1) {
+			if (msgrcv(mq, &item, SIZE_MENSAJE, CARTON, IPC_NOWAIT) != -1 || msgrcv(mq, &item, SIZE_MENSAJE, PLASTICO, IPC_NOWAIT) != -1 || msgrcv(mq, &item, SIZE_MENSAJE, ALUMINIO, IPC_NOWAIT) != -1) {
 				printf("%sRECICLADOR VIDRIO | AYUDANDO (No hay vidrio para reciclar) | Item reciclado = %s (%ld) | Proceso = %d %s \n", green(), item.nombre, item.tipo, getpid(), reset());
 			} else {
 				printf("%sRECICLADOR VIDRIO | Tomando mate (Los otros recicladores no requieren ayuda) | Proceso = %d %s \n", green(), getpid(), reset()); 
@@ -71,10 +75,10 @@ void reciclar_Carton() {
 	while(1) {
 		MENSAJE item;
 
-		if (msgrcv(mq, &item, SIZE_MENSAJE, 3, IPC_NOWAIT) != -1) { // Intento reciclar del tipo Carton
+		if (msgrcv(mq, &item, SIZE_MENSAJE, CARTON, IPC_NOWAIT) != -1) { // Intento reciclar del tipo Carton
 			printf("%sRECICLADOR CARTON | Item reciclado = %s (%ld) | Proceso = %d %s \n", green(), item.nombre, item.tipo, getpid(), reset());
 		} else { // Ayuda a los otros recicladores o toma mate.		
-			if (msgrcv(mq, &item, SIZE_MENSAJE, 2, IPC_NOWAIT) != -1 || msgrcv(mq, &item, SIZE_MENSAJE, 4, IPC_NOWAIT) != -1 || msgrcv(mq, &item, SIZE_MENSAJE, 5, IPC_NOWAIT) != -1) {
+			if (msgrcv(mq, &item, SIZE_MENSAJE, PLASTICO, IPC_NOWAIT) != -1 || msgrcv(mq, &item, SIZE_MENSAJE, ALUMINIO, IPC_NOWAIT) != -1 || msgrcv(mq, &item, SIZE_MENSAJE, VIDRIO, IPC_NOWAIT) != -1) {
 				printf("%sRECICLADOR CARTON | AYUDANDO (No hay carton para reciclar) | Item reciclado = %s (%ld) | Proceso = %d %s \n", green(), item.nombre, item.tipo, getpid(), reset());
 			} else {
 				printf("%sRECICLADOR CARTON | Tomando mate (Los otros recicladores no requieren ayuda) | Proceso = %d %s \n", green(), getpid(), reset()); 
@@ -96,10 +100,10 @@ void reciclar_Plastico() {
 	while(1) {
 		MENSAJE item;
 
-		if (msgrcv(mq, &item, SIZE_MENSAJE, 4, IPC_NOWAIT) != -1) { // Intento reciclar del tipo Plastico.
+		if (msgrcv(mq, &item, SIZE_MENSAJE, PLASTICO, IPC_NOWAIT) != -1) { // Intento reciclar del tipo Plastico.
 			printf("%sRECICLADOR PLASTICO | Item reciclado = %s (%ld) | Proceso = %d %s \n", green(), item.nombre, item.tipo, getpid(), reset());
 		} else { // Ayuda a los otros recicladores o toma mate.
-			if (msgrcv(mq, &item, SIZE_MENSAJE, 2, IPC_NOWAIT) != -1 || msgrcv(mq, &item, SIZE_MENSAJE, 3, IPC_NOWAIT) != -1 || msgrcv(mq, &item, SIZE_MENSAJE, 5, IPC_NOWAIT) != -1) {
+			if (msgrcv(mq, &item, SIZE_MENSAJE, ALUMINIO, IPC_NOWAIT) != -1 || msgrcv(mq, &item, SIZE_MENSAJE, VIDRIO, IPC_NOWAIT) != -1 || msgrcv(mq, &item, SIZE_MENSAJE, CARTON, IPC_NOWAIT) != -1) {
 				printf("%sRECICLADOR PLASTICO | AYUDANDO (No hay plastico para reciclar) | Item reciclado = %s (%ld) | Proceso = %d %s \n", green(), item.nombre, item.tipo, getpid(), reset());
 			} else {
 				printf("%sRECICLADOR PLASTICO | Tomando mate (Los otros recicladores no requieren ayuda) | Proceso = %d %s \n", green(), getpid(), reset()); 
@@ -121,10 +125,10 @@ void reciclar_Aluminio() {
 	while(1) {
 		MENSAJE item;
 		
-		if (msgrcv(mq, &item, SIZE_MENSAJE, 5, IPC_NOWAIT) != -1) { // Intento reciclar del tipo Aluminio.
+		if (msgrcv(mq, &item, SIZE_MENSAJE, ALUMINIO, IPC_NOWAIT) != -1) { // Intento reciclar del tipo Aluminio.
 			printf("%sRECICLADOR ALUMINIO | Item reciclado = %s (%ld) | Proceso = %d %s \n", green(), item.nombre, item.tipo, getpid(), reset());
 		} else { // Ayuda a los otros recicladores o toma mate.	
-			if (msgrcv(mq, &item, SIZE_MENSAJE, 2, IPC_NOWAIT) != -1 || msgrcv(mq, &item, SIZE_MENSAJE, 3, IPC_NOWAIT) != -1 || msgrcv(mq, &item, SIZE_MENSAJE, 4, IPC_NOWAIT) != -1) {
+			if (msgrcv(mq, &item, SIZE_MENSAJE, VIDRIO, IPC_NOWAIT) != -1 || msgrcv(mq, &item, SIZE_MENSAJE, CARTON, IPC_NOWAIT) != -1 || msgrcv(mq, &item, SIZE_MENSAJE, PLASTICO, IPC_NOWAIT) != -1) {
 				printf("%sRECICLADOR ALUMINIO | AYUDANDO (No hay aluminio para reciclar) | Item reciclado = %s (%ld) | Proceso = %d %s \n", green(), item.nombre, item.tipo, getpid(), reset());
 			} else {
 				printf("%sRECICLADOR ALUMINIO | Tomando mate (Los otros recicladores no requieren ayuda) | Proceso = %d %s \n", green(), getpid(), reset()); 
@@ -137,7 +141,7 @@ void reciclar_Aluminio() {
 }
 
 void inicializarColaMensajes() {
-	mq = msgget (mq_key, 0666);
+	mq = msgget(mq_key, 0666);
 	
 	if (mq == -1) {
 		printf("%sOcurrio un error al crear la cola de mensajes. %s\n", red(), reset());
