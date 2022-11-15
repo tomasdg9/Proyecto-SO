@@ -1,15 +1,17 @@
-# makefile para compilar el puente de una sola mano con procesos y colas de mensajes.
+# makefile para compilar el puente de una sola mano con Procesos y Colas de Mensajes.
 
-# Si se ejecuta solo 'make' 'se ejecuta el objetivo all, que incluye todo.
+# Al ejecutar 'make' se ejecuta el primer objetivo 'all', que incluye la compilación global del ejercicio.
 all: PuentePMQ VehiculoNORTE VehiculoSUR
 
-# Compilacion del archivo principal.
+# Compilacion del archivo principa del puente de una sola mano.
 PuentePMQ:
 	gcc PuentePMQ.c -o PuentePMQ
 
+# Compilacion del archivo para los vehículos del NORTE.
 VehiculoNORTE:
 	gcc VehiculoNORTE.c -o VehiculoNORTE
 	
+# Compilacion del archivo para los vehículos del NORTE.
 VehiculoSUR:
 	gcc VehiculoSUR.c -o VehiculoSUR
 	

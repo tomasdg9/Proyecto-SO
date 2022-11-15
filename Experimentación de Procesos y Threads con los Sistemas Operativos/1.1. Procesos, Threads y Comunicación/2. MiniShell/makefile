@@ -1,9 +1,8 @@
-
 # makefile para compilar la minishell
 
 COMANDOS = mkdir rmdir mkfile ls swfile man chmod
 
-# Si se ejecuta solo 'make' 'se ejecuta el objetivo all, que incluye todo.
+# Al ejecutar 'make' se ejecuta el primer objetivo 'all', que incluye la compilación global del ejercicio.
 all: minishell $(COMANDOS)
 
 # Compilacion del archivo principal.

@@ -1,9 +1,9 @@
-# makefile para compilar el puente de una sola mano con procesos y colas de mensajes.
+# makefile para compilar el puente de una sola mano con Hilos y Semáforos.
 
-# Si se ejecuta solo 'make' 'se ejecuta el objetivo all, que incluye todo.
+# Al ejecutar 'make' se ejecuta el primer objetivo 'all', que incluye la compilación global del ejercicio.
 all: PuenteHS
 
-# Compilacion del archivo principal.
+# Compilacion del puente de una sola mano completo.
 PuenteHS:
 	gcc PuenteHS.c -o PuenteHS -pthread
 	
