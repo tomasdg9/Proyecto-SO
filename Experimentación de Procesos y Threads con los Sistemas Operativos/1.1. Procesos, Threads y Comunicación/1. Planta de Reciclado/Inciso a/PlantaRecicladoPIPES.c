@@ -190,7 +190,7 @@ void reciclar_Carton() {
 		if (read(p3[0], &item, sizeof(item)) != -1) { // Intenta reciclar del pipe de Carton.
 			printf("%sRECICLADOR CARTON | Item reciclado = %s (%d) | Proceso = %d %s \n", green(), item.nombre, item.tipo, getpid(), reset());
 		} else { // Ayuda a los otros recicladores o toma mate.			
-			if (read(p2[0], &item, sizeof(item)) != -1 || read(p4[0], &item, sizeof(item)) != -1 || read(p5[0], &item, sizeof(item)) != -1) {
+			if (read(p4[0], &item, sizeof(item)) != -1 || read(p5[0], &item, sizeof(item)) != -1 || read(p2[0], &item, sizeof(item)) != -1) {
 				printf("%sRECICLADOR CARTON | AYUDANDO (No hay carton para reciclar) | Item reciclado = %s (%d) | Proceso = %d %s \n", green(), item.nombre, item.tipo, getpid(), reset());
 			} else {
 				printf("%sRECICLADOR CARTON | Tomando mate (Los otros recicladores no requieren ayuda) | Proceso = %d %s \n", green(), getpid(), reset()); 
@@ -215,7 +215,7 @@ void reciclar_Plastico() {
 		if (read(p4[0], &item, sizeof(item)) != -1) { // Intenta reciclar del pipe de Plastico.
 			printf("%sRECICLADOR PLASTICO | Item reciclado = %s (%d) | Proceso = %d %s \n", green(), item.nombre, item.tipo, getpid(), reset());
 		} else { // Ayuda a los otros recicladores o toma mate.
-			if (read(p2[0], &item, sizeof(item)) != -1 || read(p3[0], &item, sizeof(item)) != -1 || read(p5[0], &item, sizeof(item)) != -1) {
+			if (read(p5[0], &item, sizeof(item)) != -1 || read(p2[0], &item, sizeof(item)) != -1 || read(p3[0], &item, sizeof(item)) != -1) {
 				printf("%sRECICLADOR PLASTICO | AYUDANDO (No hay plastico para reciclar) | Item reciclado = %s (%d) | Proceso = %d %s \n", green(), item.nombre, item.tipo, getpid(), reset());
 			} else {
 				printf("%sRECICLADOR PLASTICO | Estoy tomando mate (Los otros recicladores no requieren ayuda) | Proceso = %d %s \n", green(), getpid(), reset()); 

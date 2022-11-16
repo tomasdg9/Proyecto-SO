@@ -75,9 +75,19 @@ void vehiculoNorte() {
 	}
 }
 
+void inicializarColaMensajes() {
+	mq = msgget(mq_key, 0666);
+	
+	if (mq == -1) {
+		printf("%sOcurrio un error al obtener la cola de mensajes. %s\n", red(), reset());
+		exit(-1);
+	}
+}
+
 int main (int argc, char ** argv) {
-	mq = msgget (mq_key, 0666);
+	inicializarColaMensajes();
 	vehiculoNorte();
+	
 	return 0;
 }
 
